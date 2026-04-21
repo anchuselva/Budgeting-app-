@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String
+  password  String
+  avatar    String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  budgets          Budget[]
+  expenses         Expense[]
+  income           Income[]
+  budgetCategories BudgetCategory[]
+
+  @@map("users")
+}
+
+model BudgetCategory {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String?
+  color     String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgets   Budget[]
+  expenses  Expense[]
+
+  @@unique([userId, name])
+  @@map("budget_categories")
+}
+
+model Budget {
+  id            String   @id @default(cuid())
+  categoryId    String
+  userId        String
+  amount        Float
+  spent         Float    @default(0)
+  month         Int
+  year          Int
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category BudgetCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+
+  @@unique([userId, categoryId, month, year])
+  @@map("budgets")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  budgetId    String
+  categoryId  String
+  userId      String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  receipt     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget   Budget         @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
+
+model Income {
+  id          String   @id @default(cuid())
+  userId      String
+  source      String
+  amount      Float
+  frequency   String   @default("monthly") // monthly, weekly, daily, one-time
+  date        DateTime @default(now())
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("income")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  type        String   // "income" or "expense"
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("transactions")
+}

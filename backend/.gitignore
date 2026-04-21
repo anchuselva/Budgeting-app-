@@ -1,0 +1,32 @@
+# Backend
+node_modules/
+dist/
+.env
+.env.local
+*.log
+*.sql
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Prisma
+prisma/.env
+prisma/migrations/dev.db
+prisma/dev.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Build
+build/
+out/
+
+# OS
+Thumbs.db
+.DS_Store
